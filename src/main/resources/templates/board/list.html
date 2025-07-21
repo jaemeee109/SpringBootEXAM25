@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/basic.html}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/basic.html}">
 
 <div layout:fragment="content">
-  <!--<h1> 게시판 리스트 페이지 </h1>-->
+
   <div class="row mt-3">
-    <!--검색용 form 처리 -->
+
     <form action="/board/list" method="get">
       <div class="col">
         <input type="hidden" name="size" th:value="${pageRequestDTO.size}">
@@ -19,7 +19,7 @@
               <option value="tw" th:selected="${pageRequestDTO.type=='tw'}">제목&작성자</option>
               <option value="tcw" th:selected="${pageRequestDTO.type=='tcw'}">제목&내용&작성자</option>
             </select>
-          </div> <!-- 검색 리스트 박스 종료 -->
+          </div>
 
           <input type="text" class="form-control" name="keyword" th:value="${pageRequestDTO.keyword}">
           <div class="input-group-append">
@@ -34,7 +34,7 @@
           </div>
           <div class="card-body">
             <h5 class="card-title">마법의 소라고동에게 물어봐</h5>
-            <!--테이블 영역-->
+            <!-- 테이블 영역-->
             <table class="table">
               <thead>
               <tr>
@@ -64,7 +64,6 @@
                   <a class="page-link" th:data-num="${responseDTO.start -1}">이전페이지</a>
                 </li>
                 <th:block th:each="i:${#numbers.sequence(responseDTO.start,responseDTO.end)}">
-
                   <li th:class="${responseDTO.page == i}?'page-item active':'page-item'">
                     <a class="page-link" th:data-num="${i}">[[${i}]]</a>
                   </li> <!--  [1] [2] [3] ......  -->
@@ -72,56 +71,24 @@
                 <li class="page-item" th:if="${responseDTO.next}">
                   <a class="page-link" th:data-num="${responseDTO.end + 1}">다음페이지</a>
                 </li>
-
               </ul>
-
             </div>
-
           </div>
         </div>
       </div>
-    </form> <!--form 종료-->
+    </form>
+  </div>
+
+
+  <div class="mt-3">
+    <a href="/board/register" class="btn btn-success">게시물 등록</a>
   </div>
 </div>
 
 <script layout:fragment="script" th:inline="javascript">
 
-
-  document.querySelector(".pagination").addEventListener("click",function (e){
-    e.preventDefault()
-    e.stopPropagation()
-
-    const target = e.target
-
-    if(target.tagName !== 'A'){
-      return
-    }//if종료
-    const num = target.getAttribute("data-num")
-
-
-    const formObj = document.querySelector("form")
-    formObj.innerText += `<input type='hidden' name='page' value='${num}'>`
-
-    formObj.submit()
-
-  },false) //버블링
-
-
-
-  document.querySelector(".clearBtn").addEventListener("click",function (e){
-    e.preventDefault()
-    e.stopPropagation()
-    self.location='/board/list'
-  },false)
-
-
-  const result = [[${result}]]
-  if(result){
-    alert(result)
-  }
   document.querySelector(".pagination").addEventListener("click", function(e) {
     e.preventDefault();
-
     const target = e.target;
     if (target.tagName !== 'A') {
       return;
@@ -130,22 +97,34 @@
     const num = target.getAttribute("data-num");
     const formObj = document.querySelector("form");
 
-    // 기존에 있던 page input이 있으면 삭제 (중복 방지)
+
     const existingInput = formObj.querySelector("input[name='page']");
     if (existingInput) {
       existingInput.remove();
     }
 
-    // 새 hidden input 생성
+
     const input = document.createElement("input");
     input.type = "hidden";
     input.name = "page";
     input.value = num;
 
     formObj.appendChild(input);
-
     formObj.submit();
   });
 
-  console.log("자바스크립트 fragment 테스트.....")
+
+  document.querySelector(".clearBtn").addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    self.location = '/board/list';
+  }, false);
+
+
+  const result = [[${result}]];
+  if(result) {
+    alert(result);
+  }
 </script>
+
+</html>

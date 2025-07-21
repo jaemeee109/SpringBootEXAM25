@@ -34,13 +34,19 @@ public class BoardController {
     } // list종료
 
     @GetMapping("/register")
+    public String registerForm(Model model) {
+
+        return "board/register";
+    }
+
+    @PostMapping("/register")
     public String registerPost(@Valid BoardDTO boardDTO, BindingResult bindingResult, RedirectAttributes redirectAttributes){
 
         log.info("===Board Post Register===");
         if(bindingResult.hasErrors()){
             log.info("===has error===");
-            redirectAttributes.addFlashAttribute("errors",bindingResult.getAllErrors());
-            return "redirect:/board/register";
+            redirectAttributes.addAttribute("errors",bindingResult.getAllErrors());
+            return "board/register";
         } // if 종료
 
         log.info(boardDTO);
@@ -89,6 +95,8 @@ public class BoardController {
         redirectAttributes.addFlashAttribute("result","remove");
         return "redirect:/board/list";
     } // remove 종료
+
+
 
 } // class종료
 

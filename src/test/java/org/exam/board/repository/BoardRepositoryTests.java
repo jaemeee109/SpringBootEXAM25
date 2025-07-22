@@ -2,6 +2,7 @@ package org.exam.board.repository;
 
 import lombok.extern.log4j.Log4j2;
 import org.exam.board.domain.Board;
+import org.exam.board.dto.BoardListReplyCountDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -127,7 +128,27 @@ public class BoardRepositoryTests {
         log.info("현재 위치가 시작페이지인지? : " + result.isFirst());
 
         result.getContent().forEach(board->log.info(board));
-    }
+    } // testSearchAll 종료
+
+    @Test
+    public void testSearchReplyCount(){
+
+        String[] types = {"t","c","w"};
+        String keyword = "1";
+
+        Pageable pageable = PageRequest.of(0,10,Sort.by("bno").descending());
+        Page<BoardListReplyCountDTO> result = boardRepository.searchWithReplyCount(types,keyword,pageable);
+
+        log.info("전체 게시물 수 : " + result.getTotalElements());
+        log.info("총 페이지 수 : " + result.getTotalPages());
+        log.info("현재 페이지 번호 : " + result.getNumber());
+        log.info("페이지당 데이터 개수 : " + result.getSize() );
+        log.info("다음페이지 여부 : " + result.hasNext());
+        log.info("시작페이지 여부 : " + result.isFirst());
+
+        result.getContent().forEach(board -> log.info(board));
+
+    } //testSearchReplyCount 종료
 
 
 

@@ -25,6 +25,7 @@
           <div class="input-group-append">
             <button class="btn btn-outline-secondary searchBtn" type="submit">검색</button>
             <button class="btn btn-outline-secondary clearBtn" type="button">비우기</button>
+            <button class="btn btn-outline-secondary regBtn" type="button">새글</button>
           </div>
         </div>
 
@@ -38,7 +39,7 @@
             <table class="table">
               <thead>
               <tr>
-                <th scope="col">bno</th>
+                <th scope="col">번호</th>
                 <th scope="col">제목</th>
                 <th scope="col">작성자</th>
                 <th scope="col">등록일</th>
@@ -49,7 +50,8 @@
               <tr th:each="dto:${responseDTO.dtoList}">
                 <th scope="row">[[${dto.bno}]]</th>
                 <td>
-                  <a th:href="|@{/board/read(bno =${dto.bno})}&${link}|">[[${dto.title}]] </a>
+                  <a th:href="|@{/board/read(bno =${dto.bno})}&${link}|" class="text-decoration-none">[[${dto.title}]] </a>
+                  <span class="badge progress-bar-success" style="background-color: #0a53be">[[${dto.replyCount}]]</span>
                 </td>
                 <td>[[${dto.writer}]]</td>
                 <td>[[${#temporals.format(dto.regDate,'yyyy-MM-dd')}]]</td>
@@ -80,51 +82,77 @@
   </div>
 
 
-  <div class="mt-3">
-    <a href="/board/register" class="btn btn-success">게시물 등록</a>
+  <div class="modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Modal body text goes here.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+  <script layout:fragment="script" th:inline="javascript">
 
-<script layout:fragment="script" th:inline="javascript">
 
-  document.querySelector(".pagination").addEventListener("click", function(e) {
-    e.preventDefault();
-    const target = e.target;
-    if (target.tagName !== 'A') {
-      return;
+    document.querySelector(".pagination").addEventListener("click",function (e){
+      e.preventDefault()
+      e.stopPropagation()
+
+      const target = e.target
+
+      if(target.tagName !=='A'){
+        return
+      }
+
+      const num = target.getAttribute("data-num")
+
+
+      const formObj = document.querySelector("form")
+
+
+      formObj.innerHTML += `<input type='hidden' name='page' value='${num}'>`
+
+
+      formObj.submit()
+
+    },false)
+
+
+
+    document.querySelector(".clearBtn").addEventListener("click",function (e){
+      e.preventDefault()
+      e.stopPropagation()
+
+      self.location = '/board/list'  // 초기화 버튼을 누르면 옵션없이 초기 리스트 보임
+    },false)
+
+
+    document.querySelector(".regBtn").addEventListener("click",function (e){
+      e.preventDefault() //
+      e.stopPropagation() //
+
+      self.location = '/board/register'
+    },false)
+
+
+
+    const result = [[${result}]]
+
+    const modal = new bootstrap.Modal(document.querySelector(".modal"))
+
+    if(result){
+      modal.show()
     }
 
-    const num = target.getAttribute("data-num");
-    const formObj = document.querySelector("form");
 
 
-    const existingInput = formObj.querySelector("input[name='page']");
-    if (existingInput) {
-      existingInput.remove();
-    }
-
-
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = "page";
-    input.value = num;
-
-    formObj.appendChild(input);
-    formObj.submit();
-  });
-
-
-  document.querySelector(".clearBtn").addEventListener("click", function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    self.location = '/board/list';
-  }, false);
-
-
-  const result = [[${result}]];
-  if(result) {
-    alert(result);
-  }
-</script>
-
-</html>
+  </script>

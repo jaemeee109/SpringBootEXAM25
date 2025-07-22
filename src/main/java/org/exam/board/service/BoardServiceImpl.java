@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.exam.board.domain.Board;
 import org.exam.board.dto.BoardDTO;
+import org.exam.board.dto.BoardListReplyCountDTO;
 import org.exam.board.dto.PageRequestDTO;
 import org.exam.board.dto.PageResponseDTO;
 import org.exam.board.repository.BoardRepository;
@@ -78,6 +79,23 @@ public class BoardServiceImpl implements BoardService{
                 .total((int)result.getTotalElements())
                 .build();
     } //PageResponseDTO<BoardDTO> list 종료
+
+    @Override
+    public PageResponseDTO<BoardListReplyCountDTO> listWithReplyCount(PageRequestDTO pageRequestDTO) {
+
+
+        String[] types = pageRequestDTO.getTypes();
+        String keyword = pageRequestDTO.getKeyword();
+        Pageable pageable = pageRequestDTO.getPageable("bno");
+
+        Page<BoardListReplyCountDTO> result = boardRepository.searchWithReplyCount(types, keyword, pageable);
+
+        return PageResponseDTO.<BoardListReplyCountDTO>withAll()
+                .pageRequestDTO(pageRequestDTO)
+                .dtoList(result.getContent())
+                .total((int)result.getTotalElements())
+                .build();
+    } // listWithReplyCount 종료
 
 
 } //  class 종료

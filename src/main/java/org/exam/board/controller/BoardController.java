@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.exam.board.dto.BoardDTO;
+import org.exam.board.dto.BoardListReplyCountDTO;
 import org.exam.board.dto.PageResponseDTO;
 import org.exam.board.service.BoardService;
 import org.exam.board.dto.PageRequestDTO;
@@ -27,8 +28,7 @@ public class BoardController {
     @GetMapping("/list")
     public void list(PageRequestDTO pageRequestDTO, Model model){
 
-        PageResponseDTO<BoardDTO> responseDTO= boardService.list(pageRequestDTO);
-
+        PageResponseDTO<BoardListReplyCountDTO> responseDTO=boardService.listWithReplyCount(pageRequestDTO);
         log.info(responseDTO);
         model.addAttribute("responseDTO", responseDTO);
     } // list종료

@@ -30,7 +30,7 @@ public class ReplyRepositoryTests {
         Reply reply = Reply.builder()
                 .board(board)
                 .replyText("리포지토리에서 테스트")
-                .replyText("리포지토리")
+                .replyer("리포지토리")
                 .build();
 
         replyRepository.save(reply);

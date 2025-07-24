@@ -2,13 +2,17 @@ package org.exam.board.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity // DB테이블 관련 객체
 @Getter
 @Builder // 빌더패턴 (세터 대신 활용)
 @AllArgsConstructor // 모든 필드값으로 생성자 만듦
 @NoArgsConstructor // 기본생성자
-@ToString // 테스트용 : 객체 주소가 아닌 값을 출력
+@ToString(exclude = "imageSet") // 테스트용 : 객체 주소가 아닌 값을 출력
 public class Board extends BaseEntity { // BaseEntity -> 날짜관련된 jpa 를 연결
     
     /* 필드 */
@@ -30,6 +34,27 @@ public class Board extends BaseEntity { // BaseEntity -> 날짜관련된 jpa 를
         this.title = title;
         this.content = content;
     } // change 종료
-    
+
+
+    @Builder.Default
+    @OneToMany(mappedBy = "board", cascade = {CascadeType.ALL},fetch = FetchType.LAZY, orphanRemoval = true)
+    @BatchSize(size=20)
+    private Set<BoardImage> imageSet = new HashSet<BoardImage>();
+
+    public void addImage (String uuid, String fileName){
+        BoardImage boardImage = BoardImage.builder()
+                .uuid(uuid)
+                .fileName(fileName)
+                .board(this)
+                .ord(imageSet.size())
+                .build();
+        imageSet.add(boardImage);
+    }// addImage 종료
+
+    public void clearImages(){
+        imageSet.forEach(boardImage -> boardImage.changeBoard(null));
+        this.imageSet.clear();
+    }// clearImages 종료
+
 } // class 종료
 

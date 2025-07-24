@@ -1,11 +1,15 @@
 package org.exam.board.repository.search;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.QTuple;
 import com.querydsl.jpa.JPQLQuery;
 import org.exam.board.domain.Board;
 import org.exam.board.domain.QBoard;
 import org.exam.board.domain.QReply;
+import org.exam.board.dto.BoardImageDTO;
+import org.exam.board.dto.BoardListAllDTO;
 import org.exam.board.dto.BoardListReplyCountDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -13,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BoardSearchImpl extends QuerydslRepositorySupport implements BoardSearch {
 
@@ -126,6 +131,70 @@ public class BoardSearchImpl extends QuerydslRepositorySupport implements BoardS
 
 
     }
-}
+
+    @Override
+    public Page<BoardListAllDTO> searchWithAll(String[] types, String keyword, Pageable pageable) {
+
+
+        QBoard board = QBoard.board;
+        QReply reply = QReply.reply;
+
+        JPQLQuery<Board> boardJPQLquery = from(board);
+        boardJPQLquery.leftJoin(reply).on(reply.board.eq(board)); // fk=pk 연결
+
+        if ((types!=null && types.length>0) && keyword!=null){
+            BooleanBuilder booleanBuilder = new BooleanBuilder();
+            for (String type : types){
+                switch (type){
+                    case "t":
+                        booleanBuilder.or(board.title.contains(keyword));
+                        break;
+                    case "c":
+                        booleanBuilder.or(board.content.contains(keyword));
+                        break;
+                    case"w":
+                        booleanBuilder.or(board.writer.contains(keyword));
+                        break;
+                } // switch  종료
+            } //  for  종료
+            boardJPQLquery.where(booleanBuilder);
+        } // if 종료
+
+        boardJPQLquery.groupBy(board);
+
+        getQuerydsl().applyPagination(pageable, boardJPQLquery);
+
+        JPQLQuery<Tuple> tupleJPQLQuery= boardJPQLquery.select(board, reply.countDistinct());
+
+        List<Tuple> tupleList = tupleJPQLQuery.fetch();
+        List<BoardListAllDTO> dtoList = tupleList.stream().map(tuple -> {
+            Board board1 = (Board) tuple.get(board);
+            long replyCount = tuple.get(1, Long.class);
+            BoardListAllDTO dto = BoardListAllDTO.builder()
+                    .bno(board1.getBno())
+                    .title(board1.getTitle())
+                    .writer(board1.getWriter())
+                    .regDate(board1.getRegDate())
+                    .replyCount(replyCount)
+                    .build();
+
+            List<BoardImageDTO> imageDTOS = board1.getImageSet().stream().sorted()
+                    .map(boardImage -> BoardImageDTO.builder()
+                            .uuid(boardImage.getUuid())
+                            .fileName(boardImage.getFileName())
+                            .ord(boardImage.getOrd())
+                            .build()
+                    ).collect(Collectors.toList());
+
+            dto.setBoardImages(imageDTOS);
+
+            return dto;
+        }).collect(Collectors.toList());
+
+        long totalCount = tupleJPQLQuery.fetchCount();
+        return new PageImpl<>(dtoList, pageable, totalCount);
+
+    } //searchWithAll종료
+} // class 종료
 
 

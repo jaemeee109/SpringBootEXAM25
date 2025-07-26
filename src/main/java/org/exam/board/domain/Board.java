@@ -53,7 +53,8 @@ public class Board extends BaseEntity { // BaseEntity -> 날짜관련된 jpa 를
 
     public void clearImages(){
         imageSet.forEach(boardImage -> boardImage.changeBoard(null));
-        this.imageSet.clear();
+       this.imageSet.clear();
+
     }// clearImages 종료
 
 } // class 종료

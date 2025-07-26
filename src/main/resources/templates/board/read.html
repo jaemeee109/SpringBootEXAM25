@@ -4,7 +4,7 @@
       layout:decorate="~{layout/basic.html}">
 <head>
   <meta charset="UTF-8">
-  <title>Board Read</title>
+  <title>마법의 소라고동</title>
 </head>
 
 <div layout:fragment="content">
@@ -51,6 +51,15 @@
             </div>
           </div>
   </div><!-- end card body -->
+
+        <div class="col">
+          <div class="card" th:if="${dto.fileNames != null && dto.fileNames.size()>0}">
+            <img class="card-img-top"
+                 th:each="fileName: ${dto.fileNames}"
+                 th:src="|/view/${fileName}|">
+
+          </div>
+
     </div><!-- end card -->
   </div><!-- end col -->
 </div><!-- end row -->
@@ -125,10 +134,18 @@
   </div>
 </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- axios, ajax cnd  -->
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="/js/reply.js"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const registerModal = new bootstrap.Modal(document.querySelector(".registerModal"))
+        // 나머지 bootstrap 관련 코드들 (예: 모달 열기 닫기 등)
+      });
+    </script>
 
 </div> <!-- end layout:fragment="content"-->
 

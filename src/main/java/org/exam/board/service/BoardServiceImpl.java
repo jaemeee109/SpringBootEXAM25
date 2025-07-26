@@ -3,10 +3,7 @@ package org.exam.board.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.exam.board.domain.Board;
-import org.exam.board.dto.BoardDTO;
-import org.exam.board.dto.BoardListReplyCountDTO;
-import org.exam.board.dto.PageRequestDTO;
-import org.exam.board.dto.PageResponseDTO;
+import org.exam.board.dto.*;
 import org.exam.board.repository.BoardRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,26 +27,49 @@ public class BoardServiceImpl implements BoardService{
 
     @Override
     public Long register (BoardDTO boardDTO){
-        Board board = modelMapper.map(boardDTO, Board.class);
+        Board board = dtoTOEntity(boardDTO);
         Long bno = boardRepository.save(board).getBno();
         return bno;
     } // register 종료
 
     @Override
     public BoardDTO readOne(Long bno) {
-        Optional<Board> result = boardRepository.findById(bno);
+        // 기존 findById → findByIdWithImage 로 변경해야 함
+        Optional<Board> result = boardRepository.findByIdWithImage(bno);
         Board board = result.orElseThrow();
+
         BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class);
 
-        return boardDTO;
-    } //readOne 종료
+        // imageSet을 fileNames로 변환해서 DTO에 넣기
+        List<String> fileNames = board.getImageSet().stream()
+                .sorted()
+                .map(image -> image.getUuid() + "_" + image.getFileName())
+                .collect(Collectors.toList());
 
+        boardDTO.setFileNames(fileNames); // 이거 꼭 해줘야 수정화면에서 파일 보임
+
+        return boardDTO;
+
+    } // readOne 종료
+
+    @Transactional
     @Override
     public void modify(BoardDTO boardDTO) {
 
-        Optional<Board> result = boardRepository.findById(boardDTO.getBno());
+        Optional<Board> result = boardRepository.findByIdWithImage(boardDTO.getBno());
         Board board = result.orElseThrow();
         board.change(boardDTO.getTitle(),boardDTO.getContent());
+
+        board.clearImages();
+
+
+        if(boardDTO.getFileNames() != null) {
+            for(String fileName : boardDTO.getFileNames()) {
+            String[] arr = fileName.split("_");
+            board.addImage(arr[0], arr[1]);
+            } // for종료
+        } // if종료
+
         boardRepository.save(board);
 
     } //modify 종료
@@ -96,6 +116,20 @@ public class BoardServiceImpl implements BoardService{
                 .total((int)result.getTotalElements())
                 .build();
     } // listWithReplyCount 종료
+
+    @Override
+    public PageResponseDTO<BoardListAllDTO> listWithAll(PageRequestDTO pageRequestDTO) {
+        
+        String[] types = pageRequestDTO.getTypes();
+        String keyword = pageRequestDTO.getKeyword();
+        Pageable pageable = pageRequestDTO.getPageable("bno");
+        Page<BoardListAllDTO> result = boardRepository.searchWithAll(types, keyword, pageable);
+        
+        return  PageResponseDTO.<BoardListAllDTO>withAll().pageRequestDTO(pageRequestDTO)
+                .dtoList(result.getContent())
+                .total((int)result.getTotalElements())
+                .build();
+    } // listWithAll 종료
 
 
 } //  class 종료

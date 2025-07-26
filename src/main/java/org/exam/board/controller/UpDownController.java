@@ -24,7 +24,7 @@ import java.util.*;
 @Log4j2
 public class UpDownController {
 
-    @Value("${org.exam.upload.path")
+    @Value("${org.exam.upload.path}")
     private String uploadPath;
 
     @PostMapping(value="/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
